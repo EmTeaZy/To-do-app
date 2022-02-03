@@ -16,7 +16,7 @@ app.use(express.json());
 
 // Connect to MongoDB
 mongoose
-  .connect("mongodb://localhost:27017/ToDoList", {
+  .connect("mongodb+srv://tz:verymuch@cluster0.bibtx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
