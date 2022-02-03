@@ -12,7 +12,7 @@ body {
   position: relative;
 }
 
-#getTodo {
+#addTodo {
   appearance: none;
   background-color: #41d16a;
   border: 2px solid black;

@@ -6,85 +6,68 @@ import { Link } from "react-router-dom";
 function App() {
   const [todos, setTodos] = useState([]);
 
-  const firstUpdate = useRef(true);
-
-  // Fetch To-do list from the backend node API
+  // Fetch To-do list from the backend node API whenever the page renders
   useEffect(() => {
-    fetch("http://localhost:5000/todos")
-      .then((res) => {
-        if (res.ok) return res.json();
-      })
-      .then((jsonResponse) => {
-        setTodos((prevTodos) => {
-          return [...prevTodos, ...jsonResponse];
-        });
+    // Making a GET request
+    axios.get("http://localhost:5000/todos").then((res) => {
+      const readTodos = res.data;
+      setTodos((prevTodos) => {
+        return [...prevTodos, ...readTodos];
       });
+    });
   }, []);
-
-  //   // Send To-do list to the backend node API
-  //   useEffect(() => {
-  //     if (firstUpdate.current) {
-  //     firstUpdate.current = false;
-  //     return;
-  //   }
-  //   console.log("Request Made!");
-  //   async function updatePost() {
-  //     const requestOptions = {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(todos),
-  //     };
-  //     const response = await fetch(
-  //       "http://localhost:5000/todos",
-  //       requestOptions
-  //     );
-  //     const data = await response.json();
-  //   }
-  //   updatePost();
-  // }, [todos]);
 
   const todoName = useRef();
 
   const handler = (e) => (e.key === "Enter" ? addTodo() : null);
 
+  // Function that updates the state of Todos in the front end
+  // and also sends a post request to create given Todos in the databse
   function addTodo() {
     if (todoName.current.value === "") return;
-    const todo = { text: todoName.current.value, isCompleted: false };
-    setTodos((prevTodos) => {
-      return [...prevTodos, todo];
+    const dummyTodo = { text: todoName.current.value, isCompleted: false };
+
+    // Making a POST request
+    axios.post("http://localhost:5000/todos", dummyTodo).then((res) => {
+      // Upon success, we retrieve the data from the node API and update our current Todos
+      // This little trick is used so that we can get the IDs of each individual Todo from the database and
+      // and set the Todo to that unique ID in the React front end too
+      const todo = res.data;
+      setTodos((prevTodos) => {
+        return [...prevTodos, todo];
+      });
+      todoName.current.value = "";
     });
-    todoName.current.value = "";
-    axios
-      .post("http://localhost:5000/todos", todo)
-      .then(() => console.log("New todo sent successfully!"));
   }
 
+  // Function for updation of a Todo
   function changeStatus(id) {
     const newTodos = [...todos];
     const todo = newTodos.find((todo) => todo._id === id);
     todo.isCompleted = !todo.isCompleted;
     setTodos(newTodos);
 
+    // Making a PUT request
     axios
       .put("http://localhost:5000/todos", todo)
-      .then(() => console.log("Updated todo sent successfully!"));
+      .then((res) => console.log(res.data));
   }
 
+  // Function that removes completed Todos from both the front and the back end
   function removeTodo() {
     const toBeDeleted = todos.filter((todo) => todo.isCompleted === true);
     const newTodos = todos.filter((todo) => todo.isCompleted === false);
     setTodos(newTodos);
 
-    const json = JSON.stringify(toBeDeleted);
-    console.log("Deleting the todos: ", json);
+    // Making a DELETE request
     axios
       .delete("http://localhost:5000/todos", {
         headers: {
           "Content-Type": "application/json",
         },
-        data: json,
+        data: JSON.stringify(toBeDeleted),
       })
-      .then(() => console.log("Delete request sent successfully!"));
+      .then((res) => console.log(res.data));
   }
 
   return (
@@ -100,7 +83,7 @@ function App() {
           onKeyDown={handler}
         />
         <label className="form__label">To Do</label>
-        <button onClick={addTodo} id="getTodo" type="submit">
+        <button onClick={addTodo} id="addTodo" type="submit">
           Add
         </button>
         <button onClick={removeTodo} id="removeCompleted" type="button">
@@ -109,15 +92,14 @@ function App() {
       </div>
 
       <Link style={styling} to="/about">
-        {" "}
-        About{" "}
+        About
       </Link>
     </>
   );
 }
 
 const styling = {
-  color: "Red",
+  color: "#fe4828",
 };
 
 export default App;

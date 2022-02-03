@@ -23,19 +23,29 @@ mongoose
   .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => console.log(err));
 
+// Handling the GET request
 app.get("/todos", (req, res) => {
   Todo.find({}).then((data) => {
     res.json(data);
   });
 });
 
+// Handling the POST request
 app.post("/todos", (req, res) => {
+  // Adding the recieved Todo to the database
+
   const newTodo = new Todo();
   newTodo.text = req.body.text;
   newTodo.isCompleted = req.body.isCompleted;
-  newTodo.save().then(() => console.log("To-do added successfully"));
+  newTodo.save().then(() => {
+    // Upon success, we send the inserted Todo back to the front end
+    Todo.find({ text: req.body.text }).then((todo) => {
+      res.send(todo.at(-1));
+    });
+  });
 });
 
+// Handling the UPDATE request
 app.put("/todos", (req, res) => {
   Todo.updateOne(
     { _id: req.body._id },
@@ -43,16 +53,15 @@ app.put("/todos", (req, res) => {
   ).then(() => res.send("To-do updated successfully"));
 });
 
+// Handling the DELETE request
 app.delete("/todos", (req, res) => {
-  console.log("To Be Deleted: ", req.body);
-
   const toBeDeleted = req.body;
-
   toBeDeleted.forEach((todo) => {
     Todo.deleteOne({ _id: todo._id }).then(() =>
-      console.log("Todos deleted successfully!")
+      console.log("Todo deleted successfully!")
     );
   });
+  res.send("Todos deleted successfully!");
 });
 
 app.listen(5000, () => console.log("Server running at port 5000"));
