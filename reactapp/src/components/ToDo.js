@@ -8,12 +8,8 @@ export default function ToDo({ todo, changeStatus }) {
   return (
     <>
       <div>
-        <input
-          type="checkbox"
-          onChange={handler}
-          checked={todo.isCompleted}
-        />
-        <label data-content={todo.text}>
+        <input type="checkbox" onChange={handler} checked={todo.isCompleted} />
+        <label data-content={todo.text} onClick={handler}>
           {todo.text}
         </label>
       </div>
